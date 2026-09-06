@@ -1,0 +1,11 @@
+{
+  "name": "Tap Tap Fruit Pop",
+  "short_name": "Fruit Pop",
+  "description": "3D fruit and alphabet learning game for children ages 1-10.",
+  "start_url": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fff4cf",
+  "theme_color": "#ff5d5d",
+  "icons": []
+}
