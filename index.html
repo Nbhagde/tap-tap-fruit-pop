@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<meta name="theme-color" content="#ff5d5d">
+<meta name="description" content="Tap Tap Fruit Pop — a fast, fun 100-level fruit popping game.">
+<link rel="manifest" href="manifest.json">
+<title>Tap Tap Fruit Pop</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;background:#fff4cf}
+body{display:flex;align-items:center;justify-content:center}
+#game{position:relative;width:min(100vw,900px);height:min(100vh,700px);overflow:hidden;background:linear-gradient(#8ee8ff 0%,#c9f7ff 68%,#91df7b 68%,#64c85a 100%);touch-action:none}
+.cloud{position:absolute;background:white;border-radius:50px;opacity:.8;filter:blur(.3px)}
+.c1{width:150px;height:45px;top:70px;left:8%}.c2{width:190px;height:55px;top:145px;right:5%}.c3{width:100px;height:32px;top:230px;left:42%}
+.hud{position:absolute;z-index:20;top:14px;left:14px;right:14px;display:flex;justify-content:space-between;gap:10px}
+.badge{background:rgba(255,255,255,.92);border:3px solid #ff9f1c;border-radius:18px;padding:9px 14px;font-weight:900;font-size:18px;box-shadow:0 4px 0 rgba(0,0,0,.12)}
+.pauseBtn{position:absolute;left:50%;top:0;transform:translateX(-50%);z-index:25;background:#315b4f;color:white;border:0;border-radius:14px;padding:9px 14px;font-weight:900;font-size:16px;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+.pauseBtn:active{transform:translateX(-50%) translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.18)}
+.pauseBtn.hidden{display:none}
+#play{position:absolute;inset:0;z-index:10}
+.fruit{position:absolute;width:76px;height:76px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:52px;cursor:pointer;user-select:none;animation:pop .16s ease-out;filter:drop-shadow(0 7px 4px rgba(0,0,0,.22))}
+@keyframes pop{from{transform:scale(.1) rotate(-20deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+.fruit.hit{animation:hit .18s forwards}
+@keyframes hit{to{transform:scale(1.7);opacity:0}}
+.spark{position:absolute;z-index:8;font-size:25px;font-weight:900;pointer-events:none;animation:spark .6s forwards}
+@keyframes spark{to{transform:translateY(-55px) scale(1.4);opacity:0}}
+.overlay{position:absolute;inset:0;z-index:50;background:rgba(20,70,55,.72);display:flex;align-items:center;justify-content:center;text-align:center;padding:20px}
+.card{background:#fffdf0;border:5px solid #ff9f1c;border-radius:30px;padding:28px 28px 24px;max-width:470px;width:92%;box-shadow:0 12px 0 rgba(0,0,0,.18)}
+h1{font-size:46px;margin:0 0 8px;color:#ff5d5d;text-shadow:3px 3px #ffd166}
+.sub{font-size:18px;color:#315b4f;margin-bottom:18px;line-height:1.45}
+button{border:0;background:#ff5d5d;color:white;font-weight:900;font-size:22px;padding:14px 30px;border-radius:18px;cursor:pointer;box-shadow:0 6px 0 #cf3d3d}
+button:active{transform:translateY(4px);box-shadow:0 2px 0 #cf3d3d}
+.small{font-size:14px;margin-top:16px;color:#60766e}
+.hidden{display:none}
+#count{font-size:24px;color:#ff5d5d}
+</style>
+</head>
+<body>
+<div id="game">
+  <div class="cloud c1"></div><div class="cloud c2"></div><div class="cloud c3"></div>
+  <div class="hud">
+    <button id="pauseBtn" class="pauseBtn">⏸️ Pause</button>
+    <div class="badge">🌟 Level: <span id="level">1</span>/100</div>
+    <div class="badge">🍓 Score: <span id="score">0</span> / <span id="target">80</span></div>
+    <div class="badge">🔥 Combo: <span id="combo">0</span></div>
+    <div class="badge">❤️ <span id="lives">3</span> &nbsp; ⏱️ <span id="time">60</span>s</div>
+  </div>
+  <div id="play"></div>
+  <div id="pause" class="overlay hidden">
+    <div class="card">
+      <h1>⏸️ PAUSED</h1>
+      <div class="sub">Your timer and fruits are frozen.</div>
+      <button id="resumeBtn">▶️ RESUME</button>
+    </div>
+  </div>
+  <div id="start" class="overlay">
+    <div class="card">
+      <h1>🍉 TAP TAP<br>FRUIT POP! 🍓</h1>
+      <div class="sub">100 levels of fruit-popping action!<br>🎯 Reach each level's target before time runs out.<br>⏱️ Fruits add unique bonus seconds.<br>💣 Avoid bombs • 🔥 Build combos • ⭐ Advance through all 100 levels.<br><br><strong>💾 Your progress is saved on this PC.</strong></div>
+      <button id="startBtn">START / CONTINUE</button>
+      <button id="newGameBtn" style="margin-left:8px;background:#315b4f;box-shadow:0 6px 0 #203e36;">NEW GAME</button>
+      <div class="small">60 seconds • 3 lives • Works with mouse or touch</div>
+    </div>
+  </div>
+  <div id="over" class="overlay hidden">
+    <div class="card">
+      <h1>🎉 TIME'S UP!</h1>
+      <div class="sub">Your score: <strong id="finalScore">0</strong><br>Best score: <strong id="bestScore">0</strong></div>
+      <div id="count"></div><br>
+      <button id="againBtn">PLAY AGAIN</button>
+    </div>
+  </div>
+</div>
+<script>
+const game=document.getElementById('game');
+const play=document.getElementById('play');
+const scoreEl=document.getElementById('score');
+const comboEl=document.getElementById('combo');
+const livesEl=document.getElementById('lives');
+const timeEl=document.getElementById('time');
+const levelEl=document.getElementById('level');
+const targetEl=document.getElementById('target');
+const start=document.getElementById('start');
+const pauseOverlay=document.getElementById('pause');
+const pauseBtn=document.getElementById('pauseBtn');
+const resumeBtn=document.getElementById('resumeBtn');
+const over=document.getElementById('over');
+const finalScore=document.getElementById('finalScore');
+const bestScore=document.getElementById('bestScore');
+const count=document.getElementById('count');
+
+const fruits=['🍎','🍊','🍉','🍓','🍌','🍍','🥝','🍇','🍒','🥭'];
+const fruitTime={'🍎':1,'🍊':2,'🍉':3,'🍓':4,'🍌':5,'🍍':6,'🥝':7,'🍇':8,'🍒':9,'🥭':10};
+const MAX_LEVEL=100;
+
+let score=0, levelScore=0, combo=0, lives=3, time=60;
+let level=Math.max(1,Math.min(Number(localStorage.getItem('fruitPopLevel')||1),MAX_LEVEL));
+let levelTarget=0, running=false, paused=false, advancing=false, timer=null, spawnTimer=null;
+let best=Number(localStorage.getItem('fruitPopBest')||0);
+
+function saveProgress(){
+  localStorage.setItem('fruitPopLevel',String(level));
+  localStorage.setItem('fruitPopBest',String(best));
+}
+function resetProgress(){
+  level=1;score=0;best=0;levelScore=0;combo=0;
+  localStorage.removeItem('fruitPopLevel');
+  localStorage.removeItem('fruitPopBest');
+  levelTarget=levelConfig(1).target;
+  update();
+}
+function levelConfig(lvl){
+  return {
+    target:80+(lvl-1)*35,
+    startTime:60+Math.min(Math.floor((lvl-1)/10)*5,30),
+    fruitLife:Math.max(850,2200-lvl*12),
+    spawnDelay:Math.max(220,850-lvl*5.8),
+    bombChance:Math.min(.08+lvl*.0025,.33),
+    simultaneous:lvl>=75?2:(lvl>=40?2:1)
+  };
+}
+function formatTime(sec){
+  const m=Math.floor(sec/60), s=sec%60;
+  return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
+function update(){
+  scoreEl.textContent=score;
+  comboEl.textContent=combo;
+  livesEl.textContent=lives;
+  timeEl.textContent=formatTime(time);
+  levelEl.textContent=level;
+  targetEl.textContent=levelTarget;
+}
+function sound(type){
+  try{
+    const a=new (window.AudioContext||window.webkitAudioContext)();
+    const o=a.createOscillator(),g=a.createGain();
+    o.connect(g);g.connect(a.destination);
+    o.frequency.value=type==='bomb'?100:type==='combo'?760:520;
+    g.gain.value=.04;o.start();
+    o.frequency.exponentialRampToValueAtTime(type==='bomb'?55:1000,a.currentTime+.12);
+    g.gain.exponentialRampToValueAtTime(.001,a.currentTime+.14);
+    o.stop(a.currentTime+.15);
+  }catch(e){}
+}
+function burst(x,y,text){
+  const e=document.createElement('div');
+  e.className='spark';e.textContent=text;
+  e.style.left=x+'px';e.style.top=y+'px';
+  play.appendChild(e);setTimeout(()=>e.remove(),600);
+}
+function loseLife(){
+  combo=0;lives--;update();sound('bomb');
+  if(lives<=0) end(false);
+}
+function makeFruit(){
+  if(!running)return;
+  const cfg=levelConfig(level);
+  const el=document.createElement('div');
+  el.className='fruit';
+  const bomb=Math.random()<cfg.bombChance;
+  el.textContent=bomb?'💣':fruits[Math.floor(Math.random()*fruits.length)];
+  const r=76,w=game.clientWidth,h=game.clientHeight;
+  el.style.left=Math.max(5,Math.random()*(w-r-10))+'px';
+  el.style.top=Math.max(105,Math.random()*(h-185)+105)+'px';
+  play.appendChild(el);
+  let removed=false;
+  const remove=()=>{
+    if(removed)return;
+    removed=true;
+    el.remove();
+    // Missing a fruit is harmless. Only tapping a bomb costs a life.
+  };
+  const timeout=setTimeout(remove,cfg.fruitLife+Math.random()*450);
+  el.addEventListener('pointerdown',e=>{
+    e.preventDefault();
+    if(removed||!running||paused)return;
+    clearTimeout(timeout);removed=true;el.remove();
+    const x=parseFloat(el.style.left)+30,y=parseFloat(el.style.top);
+    if(bomb){
+      lives--;combo=0;burst(x,y,'💥 -1 LIFE');sound('bomb');update();
+      if(lives<=0)end(false);
+      return;
+    }
+    combo++;
+    const mult=1+Math.floor(combo/5);
+    const pts=(10+Math.floor(level/10)*2)*mult;
+    const bonus=fruitTime[el.textContent]||1;
+    score+=pts;levelScore+=pts;time+=bonus;
+    if(score>best)best=score;
+    saveProgress();
+    burst(x,y,'+'+pts+'  +'+bonus+'s ⏱️'+(mult>1?' 🔥':''));
+    sound(combo%5===0?'combo':'pop');update();
+    if(levelScore>=levelTarget&&!advancing){
+      advancing=true;
+      setTimeout(advanceLevel,220);
+    }
+  });
+}
+function spawn(){
+  if(!running||paused)return;
+  const cfg=levelConfig(level);
+  for(let i=0;i<cfg.simultaneous;i++)makeFruit();
+  spawnTimer=setTimeout(spawn,cfg.spawnDelay);
+}
+function startGame(){
+  clearInterval(timer);clearTimeout(spawnTimer);
+  score=0;levelScore=0;combo=0;lives=3;paused=false;advancing=false;
+  level=Math.max(1,Math.min(Number(level)||1,MAX_LEVEL));
+  const cfg=levelConfig(level);
+  levelTarget=cfg.target;time=cfg.startTime;running=true;
+  play.querySelectorAll('.fruit,.spark').forEach(e=>e.remove());
+  start.classList.add('hidden');over.classList.add('hidden');pauseOverlay.classList.add('hidden');pauseBtn.classList.remove('hidden');update();spawn();
+  timer=setInterval(()=>{
+    if(!running||paused)return;
+    time=Math.max(0,time-1);update();
+    if(time===0)end(false);
+  },1000);
+}
+function advanceLevel(){
+  if(!running||levelScore<levelTarget)return;
+  clearTimeout(spawnTimer);
+  play.querySelectorAll('.fruit').forEach(e=>e.remove());
+  if(level>=MAX_LEVEL){end(true);return;}
+  level++;advancing=false;
+  saveProgress();
+  levelScore=0;combo=0;levelTarget=levelConfig(level).target;
+  time+=10;update();
+  burst(game.clientWidth/2-60,game.clientHeight/2,'LEVEL '+level+'! 🚀');
+  setTimeout(()=>{if(running)spawn()},500);
+}
+function pauseGame(){
+  if(!running||paused)return;
+  paused=true;
+  clearTimeout(spawnTimer);
+  pauseOverlay.classList.remove('hidden');
+  pauseBtn.textContent='▶️ Resume';
+}
+function resumeGame(){
+  if(!running||!paused)return;
+  paused=false;
+  pauseOverlay.classList.add('hidden');
+  pauseBtn.textContent='⏸️ Pause';
+  spawn();
+}
+function end(completed){
+  if(!running)return;
+  running=false;clearInterval(timer);clearTimeout(spawnTimer);
+  play.querySelectorAll('.fruit').forEach(e=>e.remove());
+  if(score>best)best=score;
+  saveProgress();
+  finalScore.textContent=score;bestScore.textContent=best;pauseOverlay.classList.add('hidden');pauseBtn.classList.add('hidden');
+  count.textContent=completed?'🏆 100 LEVELS COMPLETE!':'Reached level '+level+' • TIME’S UP!';
+  over.classList.remove('hidden');
+}
+document.getElementById('startBtn').onclick=startGame;
+document.getElementById('againBtn').onclick=startGame;
+document.getElementById('newGameBtn').onclick=()=>{
+  if(running)return;
+  resetProgress();
+};
+pauseBtn.onclick=()=>paused?resumeGame():pauseGame();
+resumeBtn.onclick=resumeGame;
+levelTarget=levelConfig(level).target;
+update();
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
+</script>
+</body>
+</html>

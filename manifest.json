@@ -1,0 +1,11 @@
+{
+  "name": "Tap Tap Fruit Pop",
+  "short_name": "Fruit Pop",
+  "description": "100-level fruit popping arcade game.",
+  "start_url": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fff4cf",
+  "theme_color": "#ff5d5d",
+  "icons": []
+}
